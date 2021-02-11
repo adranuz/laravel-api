@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\DB;
 
 class User extends Authenticatable
 {
+    protected $guard_name = 'api';
     use HasApiTokens, Notifiable;
     const ACTIVE = 1;
     const INACTIVE = 2;
