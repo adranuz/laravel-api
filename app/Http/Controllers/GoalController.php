@@ -21,17 +21,67 @@ class GoalController extends Controller
     //obtiene metas que necesitan una seccion
     public function getMetasPorSeccion(Request $request,int $candidatoId){
         //$metas = Goal::whereCandidatoId($candidatoId)->get();
-
+        
         $param = $request->goal_type;
-       // return $param;
-        $metas = DB::table("secciones")
+        $id = $request->id;
+        $user = User::find($id);
+
+        
+        if($user->coordinador == "S" && $user->co_de == "N"){
+            
+            $coordinador = Coordinador::find($user->candidato_id);
+            
+            $sec = json_decode($coordinador->configuracion, true)['registros'];
+            $arr = explode("-",$sec);
+            
+            if(count($arr) == 3){
+                $seccion = DB::table('secciones')->where('seccion',$arr[2])->get();
+                $sec = $arr[2];
+                $metas = DB::table("secciones")
+                ->join('goals','secciones.id',"=",'goals.seccion_id')
+                ->join("type_sympathizer","type_sympathizer.id","=",'goals.type_sympathizer_id')
+                ->where("goals.candidato_id", $candidatoId)
+                ->where("type_sympathizer.name", $param)
+                ->where("goals.seccion_id",$seccion[0]->id)
+                ->get();
+
+                return $metas;
+            }
+
+            else            
+            {
+                $metas = DB::table("secciones")
             ->join('goals','secciones.id',"=",'goals.seccion_id')
             ->join("type_sympathizer","type_sympathizer.id","=",'goals.type_sympathizer_id')
             ->where("goals.candidato_id", $candidatoId)
             ->where("type_sympathizer.name", $param)
             ->get();
+            
+            return $metas;
+            }
+        }else if($user->co_de == "S"){
+            $demarcacion = Demarcaciones::find($user->demarcacion);
+            
+            $metas = DB::table("secciones")
+            ->join('goals','secciones.id',"=",'goals.seccion_id')
+            ->join("type_sympathizer","type_sympathizer.id","=",'goals.type_sympathizer_id')
+            ->where("goals.candidato_id", $candidatoId)
+            ->where("goals.demarcaciones_id",$demarcacion->id)
+            ->where("type_sympathizer.name", $param)                
+            ->get();
+            return $metas;
+        }else{
+                        // return $param;
+            $metas = DB::table("secciones")
+            ->join('goals','secciones.id',"=",'goals.seccion_id')
+            ->join("type_sympathizer","type_sympathizer.id","=",'goals.type_sympathizer_id')
+            ->where("goals.candidato_id", $candidatoId)
+            ->where("type_sympathizer.name", $param)
+            ->get();
+            
+            return $metas;
 
-        return $metas;
+        }       
     }
     
     public function getMetasPorDemarcacion(Request $request,int $candidatoId){
@@ -51,7 +101,17 @@ class GoalController extends Controller
             ->orderBy('goals.demarcaciones_id','asc')
             ->get();
             return $metas;
-        }else{
+        }else if($user->coordinador == "S" && $user->co_De == "N"){
+            /*se debe de cambiar esto*/
+            $metas = DB::table("demarcaciones")
+            ->join('goals','demarcaciones.id',"=",'goals.demarcaciones_id')
+            ->join("type_sympathizer","type_sympathizer.id","=",'goals.type_sympathizer_id')
+            ->where("goals.candidato_id", $candidatoId)
+            ->where("type_sympathizer.name", $param)
+            ->orderBy('goals.demarcaciones_id','asc')
+            ->get();
+        }        
+        else{
 
         $metas = DB::table("demarcaciones")
         ->join('goals','demarcaciones.id',"=",'goals.demarcaciones_id')
@@ -61,7 +121,7 @@ class GoalController extends Controller
         ->orderBy('goals.demarcaciones_id','asc')
         ->get();
 
-    return $metas;
+        return $metas;
         }
 
     }
@@ -140,8 +200,9 @@ class GoalController extends Controller
             $s = [];
             if($demarcacion){
                 foreach ($seccs as $sec){
-                    array_push($secciones,"Seccion $sec");
-                    array_push($nd,$this->consultaSimpatizantes($entidad, $claveMunicipio,$sec, $candidato, $goal_type));
+                    $seccion = DB::table("secciones")->where("seccion",$sec)->paginate(100);
+                    array_push($secciones,"Seccion $sec");                    
+                    array_push($nd,$this->consultaSimpatizantes($entidad, $claveMunicipio,$seccion[0]->id, $candidato, $goal_type));
                    /* array_push($nnc,$this->consultaSimpatizantes($entidad, $claveMunicipio,$sec, $candidato, "NO LO CONOZCO"));
                     array_push($ns,$this->consultaSimpatizantes($entidad, $claveMunicipio,$sec, $candidato, "NO"));
                     array_push($s,$this->consultaSimpatizantes($entidad, $claveMunicipio,$sec, $candidato, "SI"));*/
@@ -152,8 +213,11 @@ class GoalController extends Controller
                 $arr = explode("-",$sec);
                 if(count($arr) == 3){
                     $sec = $arr[2];
+                    $seccion = DB::table("secciones")->where("seccion",$sec)->paginate(100);
+
+                    
                     array_push($secciones,"Seccion $sec");
-                    array_push($nd,$this->consultaSimpatizantes($entidad, $claveMunicipio,$sec, $candidato, $goal_type));
+                    array_push($nd,$this->consultaSimpatizantes($entidad, $claveMunicipio,$seccion[0]->id, $candidato, $goal_type));
                    /* array_push($nnc,$this->consultaSimpatizantes($entidad, $claveMunicipio,$sec, $candidato, "NO LO CONOZCO"));
                     array_push($ns,$this->consultaSimpatizantes($entidad, $claveMunicipio,$sec, $candidato, "NO"));
                     array_push($s,$this->consultaSimpatizantes($entidad, $claveMunicipio,$sec, $candidato, "SI"));*/
@@ -165,7 +229,7 @@ class GoalController extends Controller
                     $pages = round($seccions/10);
                     foreach ($sec as $seccion){
                         array_push($secciones,"Seccion $seccion->seccion");
-                        array_push($nd,$this->consultaSimpatizantes($entidad, $claveMunicipio,$seccion->seccion, $candidato,$goal_type));
+                        array_push($nd,$this->consultaSimpatizantes($entidad, $claveMunicipio,$seccion->id, $candidato,$goal_type));
                         /*array_push($nnc,$this->consultaSimpatizantes($entidad, $claveMunicipio,$seccion->seccion, $candidato, "NO LO CONOZCO"));
                         array_push($ns,$this->consultaSimpatizantes($entidad, $claveMunicipio,$seccion->seccion, $candidato, "NO"));
                         array_push($s,$this->consultaSimpatizantes($entidad, $claveMunicipio,$seccion->seccion, $candidato, "SI"));*/
@@ -185,7 +249,7 @@ class GoalController extends Controller
             $s = [];
             foreach ($sec as $seccion){
                 array_push($secciones,"Seccion $seccion->seccion");
-                array_push($nd,$this->consultaSimpatizantes($entidad, $claveMunicipio,$seccion->seccion, $candidato, $goal_type));
+                array_push($nd,$this->consultaSimpatizantes($entidad, $claveMunicipio,$seccion->id, $candidato, $goal_type));
                 /*array_push($nnc,$this->consultaSimpatizantes($entidad, $claveMunicipio,$seccion->seccion, $candidato, "NO LO CONOZCO"));
                 array_push($ns,$this->consultaSimpatizantes($entidad, $claveMunicipio,$seccion->seccion, $candidato, "NO"));
                 array_push($s,$this->consultaSimpatizantes($entidad, $claveMunicipio,$seccion->seccion, $candidato, "SI"));*/
@@ -196,15 +260,14 @@ class GoalController extends Controller
     }
     public function consultaSimpatizantes($entidad, $clave_municipio,$seccion, $user, $simpatiza)
     {
-
-
-        $count = PadronElectoral::join("simpatizantes_candidatos as sc", function ($join) use ($user) {
+        $count = PadronElectoral::join("simpatizantes_candidatos as sc", function ($join) use ($user,$seccion) {
             $join->on("sc.padronelectoral_id", "padronelectoral.id")
-                ->where("sc.candidato_id", $user);
+                ->where("sc.candidato_id", $user)
+                ->where("sc.seccion_id",$seccion);
         })
             ->where("entidad", $entidad)
             ->where("municipio", $clave_municipio)
-            ->where("seccion", $seccion)
+            //->where("seccion", $seccion)
             ->where("sc.data",'like' ,"%".$simpatiza."%")
             ->count();
         return $count;
