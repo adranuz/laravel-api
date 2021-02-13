@@ -15,6 +15,7 @@ class Goal extends Model
         "accomplished",
         "type_sympathizer_id",
         "name",
-        "created_by"
+        "created_by",
+        "candidato_id"
     ];
 }

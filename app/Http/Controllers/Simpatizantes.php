@@ -80,12 +80,13 @@ class Simpatizantes extends Controller
             'data'      => 'required|json'
         ])->validate();
 
+        $input= $request->all();
         $dataCandidato = $request->only('simpatiza', 'data');
         $dataCandidato["created_by"] = $request->user()->id;
         $dataCandidato["seccion_id"] = $request->seccion;
         SimpatizantesCandidato::updateOrCreate(
             [
-                'candidato_id' => $request->user()->candidato_id,
+                'candidato_id' => $request->candidato_id,
                 'padronelectoral_id' => $request->simpatizante,
             ],
             $dataCandidato

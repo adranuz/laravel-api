@@ -75,4 +75,10 @@ Route::group(['middleware' => ['auth:api']], function () {
 
     //GOALS
     Route::post('/usuario/{id}/metas', 'GoalController@store');
+    
+    Route::get('/candidato/{id}/metas/seccion', 'GoalController@getMetasPorSeccion');
+    Route::get('/candidato/{id}/metas/demarcacion', 'GoalController@getMetasPorDemarcacion');
+
+    Route::get('/candidato/{id}/entidad/{entidad_id}/municipio/{municipio_id}/simpatizantes/seccion', 'GoalController@getSimpatizantesMetas');
+    Route::get('/candidato/{id}/entidad/{entidad_id}/municipio/{municipio_id}/simpatizantes/demarcacion', 'GoalController@getSimpatizantesMetasDemarcacion');
 });

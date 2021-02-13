@@ -106,7 +106,7 @@ class Controller extends BaseController
         }
 
     }
-    //obtienes lista de secciones por municipio
+    //obtienes el conteo por seccion
     public function getSecciones($entidad,$claveMunicipio,$candidato,Request $request){
         //TODO: coordinador grafica de simpatizantes
         $user = User::find($request->id);
@@ -267,4 +267,6 @@ class Controller extends BaseController
         '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz----------';
         return substr(str_shuffle($characters),0, $tamano);
     }
+
+
 }
