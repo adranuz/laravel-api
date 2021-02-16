@@ -45,9 +45,9 @@ class BusquedasCandidatos extends Controller
 
     public function getColoniasSecciones($cve_municipio, $colonia)
     {
-        $data = DB::table('secciones')
+        $data = DB::table('secciones_colonias')
             ->where('clave_municipio', $cve_municipio)
-            //->where('nombre', $colonia)
+            ->where('nombre', $colonia)
             ->get(['id', 'seccion'])
             ->toArray();
 

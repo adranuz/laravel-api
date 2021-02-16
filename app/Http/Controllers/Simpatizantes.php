@@ -23,12 +23,11 @@ class Simpatizantes extends Controller
                 ->where("seccion", $getDatos->seccion)
                 ->first();
 
-            $simpatizante = PadronElectoral::where("cve_elector",'like',"%$request->cve_elector%")->first();
-
+            $simpatizante = PadronElectoral::where("cve_elector",'like',"%".$request->cve_elector."%")->first();
+           /* return 
             if($simpatizante != null){
                 return response()->json(202, 200);
-            }
-
+            }*/
             $data = $request->except('seccion', 'cve_elector', 'simpatiza', 'year', 'month', 'day', 'data');
             $dataCandidato = $request->only('simpatiza', 'data');
             $dataCandidato["created_by"] = $request->user()->id;
@@ -50,6 +49,7 @@ class Simpatizantes extends Controller
             }else{
                 $idcandidato = $request->user()->candidato_id;
             }
+
             $row = PadronElectoral::updateOrCreate(['cve_elector' => $claveElector], $data);
             SimpatizantesCandidato::updateOrCreate(
                 [
@@ -65,10 +65,25 @@ class Simpatizantes extends Controller
     }
 
     public function compruebaClave(Request $request){
-        $simpatizante = PadronElectoral::where("cve_elector",'like',"$request->cve_elector%")->first();
-        if($simpatizante != null){
-            return response()->json(202, 200);
+        //$simpatizante = PadronElectoral::where("cve_elector",'like',"$request->cve_elector%")->first();
+
+                    
+        $simpatizante =  DB::table('padronelectoral')
+                                    ->join('simpatizantes_candidatos','padronelectoral.id','=','simpatizantes_candidatos.padronelectoral_id')
+                                    ->where('padronelectoral.cve_elector',$request->cve_elector)
+                                    ->first();
+
+        if($simpatizante === null){
+            $simpatizante = DB::table('padronelectoral')
+            ->where('padronelectoral.cve_elector',$request->cve_elector)
+            ->first();
         }
+        
+        if($simpatizante != null){
+            return response()->json($simpatizante);
+        }
+
+
     }
 
     public function registroSimpatizante(Request $request)
