@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Coordinador;
 use App\Demarcaciones;
 use App\Models\PadronElectoral;
+use App\TypeSympathizer;
 use Illuminate\Support\Facades\DB;
 class GoalController extends Controller
 {
@@ -25,7 +26,7 @@ class GoalController extends Controller
         $param = $request->goal_type;
         $id = $request->id;
         $user = User::find($id);
-
+        $counter = $request->counter;
         
         if($user->coordinador == "S" && $user->co_de == "N"){
             
@@ -45,19 +46,21 @@ class GoalController extends Controller
                 ->where("goals.seccion_id",$seccion[0]->id)
                 ->get();
 
-                return $metas;
+
+                return $counter == "true" ? ["type" => "counter","totalGoal" => count($metas)] : ["data" => $metas, "total" => count($metas)];
             }
 
             else            
             {
                 $metas = DB::table("secciones")
-            ->join('goals','secciones.id',"=",'goals.seccion_id')
-            ->join("type_sympathizer","type_sympathizer.id","=",'goals.type_sympathizer_id')
-            ->where("goals.candidato_id", $candidatoId)
-            ->where("type_sympathizer.name", $param)
-            ->get();
-            
-            return $metas;
+                ->join('goals','secciones.id',"=",'goals.seccion_id')
+                ->join("type_sympathizer","type_sympathizer.id","=",'goals.type_sympathizer_id')
+                ->where("goals.candidato_id", $candidatoId)
+                ->where("type_sympathizer.name", $param)
+                ->get();
+                
+                return $counter == "true" ? ["type" => "counter","totalGoal" => count($metas)] : ["data" => $metas, "total" => count($metas)];
+                //return $metas;
             }
         }else if($user->co_de == "S"){
             $demarcacion = Demarcaciones::find($user->demarcacion);
@@ -69,7 +72,9 @@ class GoalController extends Controller
             ->where("goals.demarcaciones_id",$demarcacion->id)
             ->where("type_sympathizer.name", $param)                
             ->get();
-            return $metas;
+            
+            return $counter == "true" ? ["type" => "counter","totalGoal" => count($metas)] : ["data" => $metas, "total" => count($metas)];
+           // return $metas;
         }else{
                         // return $param;
             $metas = DB::table("secciones")
@@ -79,7 +84,8 @@ class GoalController extends Controller
             ->where("type_sympathizer.name", $param)
             ->get();
             
-            return $metas;
+            return $counter == "true" ? ["type" => "counter","totalGoal" => count($metas)] : ["data" => $metas, "total" => count($metas)];
+            //return $metas;
 
         }       
     }
@@ -88,6 +94,7 @@ class GoalController extends Controller
         //$metas = Goal::whereCandidatoId($candidatoId)->get();
         $user = User::find($request->id);
         $param = $request->goal_type;
+        $counter = $request->counter;
         if($user->co_de == "S" ){
 
             $demarcacion = Demarcaciones::find($user->demarcacion);
@@ -100,7 +107,8 @@ class GoalController extends Controller
             ->where("type_sympathizer.name", $param)
             ->orderBy('goals.demarcaciones_id','asc')
             ->get();
-            return $metas;
+            //return $metas;
+            return $counter == "true" ? ["type" => "counter","totalGoal" => count($metas)] : ["data" => $metas, "total" => count($metas)];
         }else if($user->coordinador == "S" && $user->co_De == "N"){
             /*se debe de cambiar esto*/
             $metas = DB::table("demarcaciones")
@@ -110,6 +118,7 @@ class GoalController extends Controller
             ->where("type_sympathizer.name", $param)
             ->orderBy('goals.demarcaciones_id','asc')
             ->get();
+            return $counter == "true" ? ["type" => "counter","totalGoal" => count($metas)] : ["data" => $metas, "total" => count($metas)];
         }        
         else{
 
@@ -121,7 +130,8 @@ class GoalController extends Controller
         ->orderBy('goals.demarcaciones_id','asc')
         ->get();
 
-        return $metas;
+        //return $metas;
+        return $counter == "true" ? ["type" => "counter","totalGoal" => count($metas)] : ["data" => $metas, "total" => count($metas)];
         }
 
     }
@@ -271,5 +281,67 @@ class GoalController extends Controller
             ->where("sc.data",'like' ,"%".$simpatiza."%")
             ->count();
         return $count;
-    }    
+    }
+    
+    
+    public function goalCounter($candidato_id, Request $request){
+        
+        $param['municipio_id'] = $request->municipio_id;       
+        $param['usuario_id'] = $request->usuario_id;
+        $user = User::find($param['usuario_id']);
+        
+        if($user->co_de == "S"){
+            $demarcaciones = Demarcaciones::find($user->demarcacion);
+            $seccs = explode(",",$demarcaciones->secciones);
+            $demarcacion = true;
+
+            $goals = DB::table('goals')
+            ->join('type_sympathizer','goals.type_sympathizer_id','=','type_sympathizer.id')
+            ->select([DB::raw('count(sop_goals.type_sympathizer_id) as total'),'type_sympathizer.name'])
+            ->where('municipios_id',$param['municipio_id'])
+            ->where('candidato_id',$candidato_id)
+            ->where('demarcaciones_id',$demarcaciones->id)                        
+            ->groupBy('goals.type_sympathizer_id')
+            ->get();
+
+            return ['data'=> $goals];
+
+        }else if($user->co_de == "N" && $user->coordinador == "S"){
+
+            $c = Coordinador::find($user->candidato_id);
+            $sec = json_decode($c->configuracion, true)['registros'];
+            $arr = explode("-",$sec);
+
+            
+
+            if(count($arr) == 3){
+
+                $seccion= DB::table('secciones')->where('seccion',$arr[2])->first();
+
+                
+                $goals = DB::table('goals')
+                ->join('type_sympathizer','goals.type_sympathizer_id','=','type_sympathizer.id')
+                ->select([DB::raw('count(sop_goals.type_sympathizer_id) as total'),'type_sympathizer.name'])
+                ->where('municipios_id',$param['municipio_id'])
+                ->where('candidato_id',$candidato_id)
+                ->where('seccion_id',$seccion->id)                        
+                ->groupBy('goals.type_sympathizer_id')
+                ->get();
+                
+                return ['data'=> $goals];
+            }
+        }
+
+        $goals = DB::table('goals')
+                ->join('type_sympathizer','goals.type_sympathizer_id','=','type_sympathizer.id')
+                ->select([DB::raw('count(sop_goals.type_sympathizer_id) as total'),'type_sympathizer.name'])
+                ->where('municipios_id',$param['municipio_id'])
+                ->where('candidato_id',$candidato_id)                        
+                ->groupBy('goals.type_sympathizer_id')
+                ->get();
+
+
+        return ['data'=> $goals];
+
+    }
 }

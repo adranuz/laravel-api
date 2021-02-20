@@ -16,7 +16,10 @@ class Simpatizantes extends Controller
     public function registroPoblacion(Request $request)
     {
         try {
+
             $getDatos = DB::table('secciones_colonias')->where("id", $request->seccion)->first();
+            # conversion de secciones colonias a secciones, parche...
+            $seccionId = DB::table('secciones')->where('seccion',$getDatos->seccion)->first();
             $localidad = DB::table('localidades_secciones')
                 ->where("clave_entidad_federal", $getDatos->clave_entidad_federal)
                 ->where("clave_municipio", $getDatos->clave_municipio)
@@ -31,7 +34,7 @@ class Simpatizantes extends Controller
             $data = $request->except('seccion', 'cve_elector', 'simpatiza', 'year', 'month', 'day', 'data');
             $dataCandidato = $request->only('simpatiza', 'data');
             $dataCandidato["created_by"] = $request->user()->id;
-            $dataCandidato["seccion_id"] = $getDatos->id;
+            $dataCandidato["seccion_id"] = $seccionId->id;//$getDatos->id;
             $data["seccion"] = $getDatos->seccion;
             $data["entidad"] = $getDatos->clave_entidad_federal;
             $data["municipio"] = $getDatos->clave_municipio;
