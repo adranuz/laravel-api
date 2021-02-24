@@ -37,6 +37,10 @@ Route::get('/get/candidatos/all', 'Controller@getCandidatos');
 Route::post('/login', 'Users\UsersController@login');
 Route::get('/comprueba/cve/electoral', 'Simpatizantes@compruebaClave');
 
+//busqueda dinámica en el padrón
+Route::get('/padron', 'Simpatizantes@busquedaPadron');
+
+
 # USUARIO
 Route::get('/secciones/usuario/{id}', 'Busquedas\BusquedasCandidatos@getSeccionesUsuario');
 Route::get('/demarcaciones/usuario/{id}', 'Busquedas\BusquedasCandidatos@getDemarcacionesUsuario');

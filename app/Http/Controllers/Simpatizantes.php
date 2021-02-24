@@ -68,9 +68,7 @@ class Simpatizantes extends Controller
     }
 
     public function compruebaClave(Request $request){
-        //$simpatizante = PadronElectoral::where("cve_elector",'like',"$request->cve_elector%")->first();
-
-                    
+        
         $simpatizante =  DB::table('padronelectoral')
                                     ->join('simpatizantes_candidatos','padronelectoral.id','=','simpatizantes_candidatos.padronelectoral_id')
                                     ->where('padronelectoral.cve_elector',$request->cve_elector)
@@ -110,5 +108,29 @@ class Simpatizantes extends Controller
             $dataCandidato
         );
         return response()->json("Ok", 200);
+    }
+
+    public function busquedaPadron(Request $request){
+
+        $param['searchType'] = $request->searchType;
+
+        $params = $request->query();
+
+        if($param['searchType'] === 'multiple'){
+
+            unset($params['searchType']);
+            
+                $query = DB::table('padronelectoral');
+
+                foreach($params as $key => $value){
+
+                    if(isset($params[$key]) && $params[$key] !== null){
+                            $query->where($key,'like','%'.$value.'%');
+                    }
+                }
+
+                $padron = $query->orderBy('municipio','asc')->paginate(20);            
+            return response()->json($padron);
+        }
     }
 }
