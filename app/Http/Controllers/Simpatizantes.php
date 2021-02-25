@@ -120,7 +120,8 @@ class Simpatizantes extends Controller
 
             unset($params['searchType']);
             
-                $query = DB::table('padronelectoral');
+                $query = DB::table('padronelectoral')
+                            ->leftJoin('simpatizantes_candidatos','padronelectoral.id','=','simpatizantes_candidatos.padronelectoral_id');
 
                 foreach($params as $key => $value){
 
