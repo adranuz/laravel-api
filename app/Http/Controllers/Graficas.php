@@ -76,7 +76,7 @@ class Graficas extends Controller
 
         $data = [];
         $tipoFiltro = ["simpatizantes" => "SI", "nosimpatizantes" => "NO", "noconocen" => "NO LO CONOZCO", "nodeciden" => "NO DECIDE",];
-        $userString = $user->candidato_id;
+        $userString = $id;
         foreach ($municipiosData as $value) {
             $data["Municipios"][] = $value->id;
             $data["idMunicipios"][$value->id] = $value->nombre;
@@ -124,7 +124,8 @@ class Graficas extends Controller
 
         $data = [];
         $tipoFiltro = ["simpatizantes" => "SI", "nosimpatizantes" => "NO", "noconocen" => "NO LO CONOZCO", "nodeciden" => "NO DECIDE",];
-        $userString = $request->user()->candidato_id;
+        //$userString = $request->user()->candidato_id;
+        $userString = $id;
         foreach ($municipiosData as $value) {
             $data["Municipios"][] = $value->id;
             $data["idMunicipios"][$value->id] = $value->nombre;
