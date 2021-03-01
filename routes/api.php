@@ -72,18 +72,32 @@ Route::group(['middleware' => ['auth:api']], function () {
     Route::get('/candidato/{id}/{entidad}/{municipio_id}/secciones', 'Busquedas\BusquedasCandidatos@candidatoSecciones');
     Route::get('/candidato/{id}/{entidad}/{municipio_id}/{seccion_id}/poblacion', 'Busquedas\BusquedasCandidatos@candidatoPoblacion');
 
+    Route::get('/candidato/{id}/coordinadores', 'Busquedas\BusquedasCandidatos@getCoordinadores');
+    Route::get('/candidato/{id}/simpatizantes', 'Busquedas\BusquedasCandidatos@getSimpatizan');
+    
     
     //GRAFICAS
     Route::get('/candidato/{id}/{entidad}/grafica/municipios/{municipio}/{filter}', 'Graficas@candidatoMunicipiosFiltro');
     Route::get('/candidato/{id}/{entidad}/{municipio_id}/{seccion_id}/graficas/{filter}', 'Graficas@consultaSimpatizantesDataSeccion');
 
     //GOALS
-    Route::post('/usuario/{id}/metas', 'GoalController@store');
-    
+    Route::post('/usuario/{id}/metas', 'GoalController@store');    
     Route::get('/candidato/{id}/metas/seccion', 'GoalController@getMetasPorSeccion');
     Route::get('/candidato/{id}/metas/demarcacion', 'GoalController@getMetasPorDemarcacion');
-
     Route::get('/candidato/{id}/metas', 'GoalController@goalCounter');
+
+    //TEAMS
+    Route::get('/teams', 'TeamController@index');
+    Route::get('/teams/{id}', 'TeamController@show');
+    Route::post('/teams', 'TeamController@store');
+    Route::put('/teams/{id}', 'TeamController@update');
+    Route::post('/teams/{id}', 'TeamController@destroy');
+    #special routes for teams
+    Route::get('candidato/{candidato_id}/teams', 'TeamController@showTeamsByCandidato');
+    Route::get('candidato/{candidato_id}/teams/{team_id}', 'TeamController@showTeamMembers');
+    Route::put('candidato/{candidato_id}/teams/{team_id}/add', 'TeamController@addToTeam');
+    Route::put('candidato/{candidato_id}/teams/{team_id}/dettach', 'TeamController@dettachToTeam');
+
 
     Route::get('/candidato/{id}/entidad/{entidad_id}/municipio/{municipio_id}/simpatizantes/seccion', 'GoalController@getSimpatizantesMetas');
     Route::get('/candidato/{id}/entidad/{entidad_id}/municipio/{municipio_id}/simpatizantes/demarcacion', 'GoalController@getSimpatizantesMetasDemarcacion');

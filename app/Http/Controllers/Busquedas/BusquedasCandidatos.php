@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Busquedas;
 use App\Coordinador;
 use App\Demarcaciones;
 use App\Models\User;
+use App\SimpatizanteCandidato;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Models\PadronElectoral;
@@ -13,6 +14,27 @@ use Illuminate\Support\Facades\Validator;
 
 class BusquedasCandidatos extends Controller
 {
+
+    public function getSimpatizan(int $candidato_id){
+        /*$simpatizantes = SimpatizanteCandidato::where('candidato_id',$candidato_id)                                    
+                                                ->first();*/
+        $people = [];                                                
+        $simpatizantes = SimpatizanteCandidato::with('people')->get();
+        
+        foreach($simpatizantes as $simpatizante){
+            $people[]=$simpatizante->people;
+        }
+
+        return response()->json(["data" => $people]);        
+    }
+    public function getCoordinadores(int $candidato_id){
+
+        $coordinadores = Coordinador::where('candidato_id',$candidato_id)                                      
+                                      ->get();
+
+        return response()->json(["data" => $coordinadores]);
+    }
+
     public function entidadesFederativas()
     {
         $data = DB::table('entidades_federales')
