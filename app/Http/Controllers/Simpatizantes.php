@@ -32,7 +32,7 @@ class Simpatizantes extends Controller
                 return response()->json(202, 200);
             }*/
             $data = $request->except('seccion', 'cve_elector', 'simpatiza', 'year', 'month', 'day', 'data');
-            $dataCandidato = $request->only('simpatiza', 'data');
+            $dataCandidato = $request->only('simpatiza', 'data','assign_type','assign_id');
             $dataCandidato["created_by"] = $request->user()->id;
             $dataCandidato["seccion_id"] = $seccionId->id;//$getDatos->id;
             $data["seccion"] = $getDatos->seccion;
@@ -97,7 +97,7 @@ class Simpatizantes extends Controller
         ])->validate();
         
         $input= $request->all();
-        $dataCandidato = $request->only('simpatiza', 'data');
+        $dataCandidato = $request->only('simpatiza', 'data','assign_type','assign_id');
         $dataCandidato["created_by"] = $request->user()->id;
         $dataCandidato["seccion_id"] = $request->seccion;
         SimpatizantesCandidato::updateOrCreate(

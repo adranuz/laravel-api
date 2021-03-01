@@ -13,6 +13,6 @@ class SimpatizantesCandidato extends Model
     protected $table = 'simpatizantes_candidatos';
 
     protected $fillable = [
-        'id', 'candidato_id', 'padronelectoral_id', 'simpatiza', 'data', 'seccion_id', 'created_by', 'created_at', 'updated_at'
+        'id', 'candidato_id', 'padronelectoral_id', 'simpatiza', 'data', 'seccion_id', 'created_by', 'created_at', 'updated_at','assign_type','assign_id'
     ];
 }
