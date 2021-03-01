@@ -19,9 +19,13 @@ class BusquedasCandidatos extends Controller
         /*$simpatizantes = SimpatizanteCandidato::where('candidato_id',$candidato_id)                                    
                                                 ->first();*/
         $people = [];                                                
-        $simpatizantes = SimpatizanteCandidato::with('people')->get();
+        $simpatizantes = SimpatizanteCandidato::with('people:padronelectoral.nombre,padronelectoral.cve_elector,padronelectoral.id')
+                                                ->where('candidato_id', $candidato_id)
+                                                ->get();
+        
         
         foreach($simpatizantes as $simpatizante){
+
             $people[]=$simpatizante->people;
         }
 
