@@ -99,6 +99,9 @@ Route::group(['middleware' => ['auth:api']], function () {
     Route::put('candidato/{candidato_id}/teams/{team_id}/dettach', 'TeamController@dettachToTeam');
 
 
+    #graficas de productividad
+    Route::get('candidato/{candidato_id}/productivity', 'ProductivityController@getEncuestadores');
+
     Route::get('/candidato/{id}/entidad/{entidad_id}/municipio/{municipio_id}/simpatizantes/seccion', 'GoalController@getSimpatizantesMetas');
     Route::get('/candidato/{id}/entidad/{entidad_id}/municipio/{municipio_id}/simpatizantes/demarcacion', 'GoalController@getSimpatizantesMetasDemarcacion');
 });
