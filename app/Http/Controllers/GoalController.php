@@ -10,6 +10,7 @@ use App\Demarcaciones;
 use App\Models\PadronElectoral;
 use App\TypeSympathizer;
 use Illuminate\Support\Facades\DB;
+use App\SimpatizanteCandidato;
 class GoalController extends Controller
 {
     public function store(Request $request, int $id){
@@ -27,7 +28,7 @@ class GoalController extends Controller
         $id = $request->id;
         $user = User::find($id);
         $counter = $request->counter;
-        
+        $fields = ['goals.id','secciones.seccion','goals.desired_quantity','type_sympathizer.name'];
         if($user->coordinador == "S" && $user->co_de == "N"){
             
             $coordinador = Coordinador::find($user->candidato_id);
@@ -44,7 +45,7 @@ class GoalController extends Controller
                 ->where("goals.candidato_id", $candidatoId)
                 ->where("type_sympathizer.name", $param)
                 ->where("goals.seccion_id",$seccion[0]->id)
-                ->get();
+                ->get($fields);
 
 
                 return $counter == "true" ? ["type" => "counter","totalGoal" => count($metas)] : ["data" => $metas, "total" => count($metas)];
@@ -57,7 +58,7 @@ class GoalController extends Controller
                 ->join("type_sympathizer","type_sympathizer.id","=",'goals.type_sympathizer_id')
                 ->where("goals.candidato_id", $candidatoId)
                 ->where("type_sympathizer.name", $param)
-                ->get();
+                ->get($fields);
                 
                 return $counter == "true" ? ["type" => "counter","totalGoal" => count($metas)] : ["data" => $metas, "total" => count($metas)];
                 //return $metas;
@@ -71,7 +72,7 @@ class GoalController extends Controller
             ->where("goals.candidato_id", $candidatoId)
             ->where("goals.demarcaciones_id",$demarcacion->id)
             ->where("type_sympathizer.name", $param)                
-            ->get();
+            ->get($fields);
             
             return $counter == "true" ? ["type" => "counter","totalGoal" => count($metas)] : ["data" => $metas, "total" => count($metas)];
            // return $metas;
@@ -82,7 +83,7 @@ class GoalController extends Controller
             ->join("type_sympathizer","type_sympathizer.id","=",'goals.type_sympathizer_id')
             ->where("goals.candidato_id", $candidatoId)
             ->where("type_sympathizer.name", $param)
-            ->get();
+            ->get($fields);
             
             return $counter == "true" ? ["type" => "counter","totalGoal" => count($metas)] : ["data" => $metas, "total" => count($metas)];
             //return $metas;
@@ -95,6 +96,7 @@ class GoalController extends Controller
         $user = User::find($request->id);
         $param = $request->goal_type;
         $counter = $request->counter;
+        $fields = ['goals.id','demarcaciones.demarcacion','goals.desired_quantity','type_sympathizer.name'];
         if($user->co_de == "S" ){
 
             $demarcacion = Demarcaciones::find($user->demarcacion);
@@ -106,7 +108,7 @@ class GoalController extends Controller
             ->where("goals.candidato_id", $candidatoId)
             ->where("type_sympathizer.name", $param)
             ->orderBy('goals.demarcaciones_id','asc')
-            ->get();
+            ->get($fields);
             //return $metas;
             return $counter == "true" ? ["type" => "counter","totalGoal" => count($metas)] : ["data" => $metas, "total" => count($metas)];
         }else if($user->coordinador == "S" && $user->co_De == "N"){
@@ -117,7 +119,7 @@ class GoalController extends Controller
             ->where("goals.candidato_id", $candidatoId)
             ->where("type_sympathizer.name", $param)
             ->orderBy('goals.demarcaciones_id','asc')
-            ->get();
+            ->get($fields);
             return $counter == "true" ? ["type" => "counter","totalGoal" => count($metas)] : ["data" => $metas, "total" => count($metas)];
         }        
         else{
@@ -128,7 +130,7 @@ class GoalController extends Controller
         ->where("goals.candidato_id", $candidatoId)
         ->where("type_sympathizer.name", $param)
         ->orderBy('goals.demarcaciones_id','asc')
-        ->get();
+        ->get($fields);
 
         //return $metas;
         return $counter == "true" ? ["type" => "counter","totalGoal" => count($metas)] : ["data" => $metas, "total" => count($metas)];
@@ -343,5 +345,31 @@ class GoalController extends Controller
 
         return ['data'=> $goals];
 
+    }
+
+    public function getSimpatizantesByType(Request $request, int $candidato_id){
+
+      $simpatizantes =  SimpatizanteCandidato::with('people')
+                               ->where('candidato_id', $candidato_id)
+                               ->where('data','like','%"participacion":"'.$request->type.'"%')
+                               ->paginate(10000);
+
+     return $simpatizantes;
+    }
+
+    public function countSimpatizantes($candidato_id){
+        $typeSympathizers = TypeSympathizer::all();
+        $counter = [];
+
+        foreach($typeSympathizers as $type){
+            
+            $counter[$type->name] = SimpatizanteCandidato::with('people')
+                               ->where('candidato_id', $candidato_id)
+                               ->where('simpatiza','SI')
+                               ->where('data','like','%"participacion":"'.$type->name.'"%')
+                               ->count();
+        }
+
+        return ["data" =>$counter];
     }
 }

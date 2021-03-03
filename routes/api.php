@@ -80,6 +80,10 @@ Route::group(['middleware' => ['auth:api']], function () {
     Route::get('/candidato/{id}/{entidad}/grafica/municipios/{municipio}/{filter}', 'Graficas@candidatoMunicipiosFiltro');
     Route::get('/candidato/{id}/{entidad}/{municipio_id}/{seccion_id}/graficas/{filter}', 'Graficas@consultaSimpatizantesDataSeccion');
 
+    Route::get('/candidato/{id}/simpatizantesBy', 'GoalController@getSimpatizantesByType');
+    Route::get('/candidato/{id}/countSimpatizantes', 'GoalController@countSimpatizantes');
+    
+
     //GOALS
     Route::post('/usuario/{id}/metas', 'GoalController@store');    
     Route::get('/candidato/{id}/metas/seccion', 'GoalController@getMetasPorSeccion');
