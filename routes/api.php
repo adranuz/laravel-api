@@ -86,6 +86,8 @@ Route::group(['middleware' => ['auth:api']], function () {
 
     //GOALS
     Route::post('/usuario/{id}/metas', 'GoalController@store');    
+    Route::delete('/metas/{id}', 'GoalController@destroy');
+    Route::put('/metas/{id}', 'GoalController@update');
     Route::get('/candidato/{id}/metas/seccion', 'GoalController@getMetasPorSeccion');
     Route::get('/candidato/{id}/metas/demarcacion', 'GoalController@getMetasPorDemarcacion');
     Route::get('/candidato/{id}/metas', 'GoalController@goalCounter');

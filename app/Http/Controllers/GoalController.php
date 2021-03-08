@@ -372,4 +372,22 @@ class GoalController extends Controller
 
         return ["data" =>$counter];
     }
+
+    public function destroy(int $id){
+        $goal = Goal::findOrFail($id);
+        $goal->delete();
+
+        return ["data" => 'Meta eliminada correctamente'];
+
+    }
+
+    public function update(Request $request, int $id){
+        $input = $request->all();
+        $goal = Goal::findOrFail($id);
+        $goal->fill($input);
+        $goal->save();
+
+        return ["data" => 'Meta actualizada correctamente'];
+
+    }
 }
