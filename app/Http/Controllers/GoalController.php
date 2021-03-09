@@ -349,10 +349,12 @@ class GoalController extends Controller
 
     public function getSimpatizantesByType(Request $request, int $candidato_id){
 
-      $simpatizantes =  SimpatizanteCandidato::with('people')
-                               ->where('candidato_id', $candidato_id)
-                               ->where('data','like','%"participacion":"'.$request->type.'"%')
-                               ->paginate(10000);
+        $simpatizantes = DB::table('simpatizantes_candidatos')
+                            ->join('padronelectoral','simpatizantes_candidatos.padronelectoral_id','=','padronelectoral.id')
+                            ->where('simpatizantes_candidatos.candidato_id',$candidato_id)
+                            ->where('simpatizantes_candidatos.data','like','%"participacion":"'.$request->type.'"%')
+                            ->orderBy('padronelectoral.seccion','asc')
+                            ->paginate(10000);
 
      return $simpatizantes;
     }
