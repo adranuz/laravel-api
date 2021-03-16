@@ -13,6 +13,32 @@ class PadronElectoral extends Model
     protected $table = 'padronelectoral';
 
     protected $fillable = [
-        'id', 'cve_elector', 'paterno', 'materno', 'nombre', 'nacimiento', 'lugar_nacimiento', 'sexo', 'ocupacion', 'calle', 'num_ext', 'num_int', 'colonia', 'cp', 'seccion', 'tiempo_residencia', 'entidad', 'distrito', 'municipio', 'localidad', 'manzana', 'en_lista_nominal', 'fecha_inscripcion_padron', 'created_at', 'updated_at', 'created_by', 'status'
+        'id', 
+        'cve_elector', 
+        'paterno', 
+        'materno', 
+        'nombre', 
+        'nacimiento', 
+        'lugar_nacimiento', 
+        'sexo', 
+        'ocupacion', 
+        'calle', 
+        'num_ext', 
+        'num_int', 
+        'colonia', 
+        'cp', 
+        'seccion', 
+        'tiempo_residencia', 
+        'entidad', 
+        'distrito', 
+        'municipio', 
+        'localidad', 
+        'manzana', 
+        'en_lista_nominal', 
+        'fecha_inscripcion_padron', 
+        'created_at', 
+        'updated_at', 
+        'created_by', 
+        'status'
     ];
 }
