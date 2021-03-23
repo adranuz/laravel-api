@@ -7,6 +7,13 @@ use Illuminate\Database\Eloquent\Model;
 class PadronElectoral extends Model
 {
     protected $table = "padronelectoral";
+    protected $fillable = [
+        'entidad',
+        'municipio',
+        'seccion',
+        'colonia',
+        'calle'
+    ];
 
     public function assigns(){
         return $this->morphMany('App\SimpatizanteCandidato','assign');

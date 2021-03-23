@@ -134,4 +134,36 @@ class Simpatizantes extends Controller
             return response()->json($padron);
         }
     }
+
+    public function updatePoblacion(Request $request, string $cve){
+        
+        
+        $padron = PadronElectoral::where('cve_elector',$cve)->first();
+        $response = ['data' => [],
+                     'message' => 'algo salio mal',
+                     'status' => 'error'];
+        
+        if($padron != null){
+            $input = $request->except('seccion');
+
+            $getDatos = DB::table('secciones_colonias')->where("id", $request->seccion)->first();
+            # conversion de secciones colonias a secciones, parche...
+            $seccionId = DB::table('secciones')->where('seccion',$getDatos->seccion)->first();
+            
+            $simpatizanteCandidato = SimpatizantesCandidato::where('padronelectoral_id',$padron->id)->first();
+            $parsedJson = json_decode($simpatizanteCandidato->data,1);
+            $parsedJson['telefonos'] = [ $input['telefono'] ];
+            $parsedJson['redsocial'] = $input['redsocial'];
+            $simpatizanteCandidato->data = json_encode($parsedJson);
+            $padron->fill($input);
+            $padron->seccion = $seccionId->seccion;
+            $padron->save();
+            $simpatizanteCandidato->save();
+            $response = ['data' => $padron,
+                         'message' => 'Actualizado correctamente',
+                         'status' => 'ok'];
+        }
+        
+        return response()->json($response);
+    }
 }

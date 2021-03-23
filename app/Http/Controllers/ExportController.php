@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Exports\SimpatizanteCandidatoExport;
+use App\Exports\layoutPadron;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -41,6 +42,12 @@ class ExportController extends Controller
             $headers = array_keys(json_decode(json_encode($simpatizantes[0]) ,true));
         }
     
-        return Excel::download(new SimpatizanteCandidatoExport(["data" => $simpatizantes, "headers" => $headers]), 'simpatizantes_type_'.$request->type .'.xlsx');                            
+        return Excel::download(new SimpatizanteCandidatoExport(["data" => $simpatizantes, "headers" => $headers]), 'simpatizantes_type_'.$request->type .'.xlsx');
+                                
+    }
+
+    public function descargarLayout(int $candidato_id){
+         return Excel::download(new layoutPadron($candidato_id), 'preparado'.$candidato_id .'.xlsx');
+         return response()->download(storage_path('app/preparado29.xlsx'));
     }
 }

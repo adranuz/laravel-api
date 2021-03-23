@@ -57,7 +57,10 @@ Route::get('/candidato/{id}/{entidad}/{municipio_id}/secciones', 'Busquedas\Busq
 Route::get('/tipos-simpatizantes', 'TypeSympathizerController@index');
 
     #Exportación
-    Route::get('/candidato/{id}/encuesta/exportar', 'ExportController@exportarEncuestaBy');
+Route::get('/candidato/{id}/encuesta/exportar', 'ExportController@exportarEncuestaBy');
+Route::get('/candidato/{id}/descargar/layout', 'ExportController@descargarLayout');
+    #Importacion de datos
+Route::get('/candidato/{id}/padron/importar', 'ImportController@importPadron');
 
 Route::group(['middleware' => ['auth:api']], function () {
     Route::get('/logout', 'Users\UsersController@logout');
@@ -67,6 +70,7 @@ Route::group(['middleware' => ['auth:api']], function () {
     Route::get('/secciones/{cve_municipio}/{colonia}', 'Busquedas\BusquedasCandidatos@getColoniasSecciones');
 
     Route::post('/registro/poblacion', 'Simpatizantes@registroPoblacion');
+    Route::put('/poblacion/{cve}', 'Simpatizantes@updatePoblacion');
     Route::post('/registro/simpatizante', 'Simpatizantes@registroSimpatizante');
     
     # catalogo relacionado al candidato

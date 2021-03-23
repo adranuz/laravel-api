@@ -10,14 +10,14 @@
 #npm-debug.log
 #yarn-error.log
 #/storage/
-#/bootstrap
-/vendor/
+/bootstrap/*
+/vendor
 node_modules/
 npm-debug.log
 yarn-error.log
 public/storage
 public/hot
-storage/*.key
+/storage/*
 .env
 Homestead.yaml
 Homestead.json
