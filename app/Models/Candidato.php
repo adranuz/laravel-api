@@ -13,4 +13,9 @@ class Candidato extends Model
     protected $fillable = [
         'nombre', 'configuacion', 'created_at', 'updated_at'
     ];
+
+    public function municipios(){
+        $registro = json_decode($this->configuacion, true)['registros'];
+        return explode('-',$registro);
+    }
 }

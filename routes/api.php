@@ -60,7 +60,7 @@ Route::get('/tipos-simpatizantes', 'TypeSympathizerController@index');
 Route::get('/candidato/{id}/encuesta/exportar', 'ExportController@exportarEncuestaBy');
 Route::get('/candidato/{id}/descargar/layout', 'ExportController@descargarLayout');
     #Importacion de datos
-Route::get('/candidato/{id}/padron/importar', 'ImportController@importPadron');
+Route::post('/candidato/{id}/padron/importar', 'ImportController@importPadron');
 
 Route::group(['middleware' => ['auth:api']], function () {
     Route::get('/logout', 'Users\UsersController@logout');
@@ -116,6 +116,9 @@ Route::group(['middleware' => ['auth:api']], function () {
     Route::get('candidato/{candidato_id}/productivity', 'ProductivityController@getEncuestadores');
     Route::get('/candidato/{id}/entidad/{entidad_id}/municipio/{municipio_id}/simpatizantes/seccion', 'GoalController@getSimpatizantesMetas');
     Route::get('/candidato/{id}/entidad/{entidad_id}/municipio/{municipio_id}/simpatizantes/demarcacion', 'GoalController@getSimpatizantesMetasDemarcacion');
+
+    #Imports 
+    Route::get('/candidato/{id}/logs', 'ImportController@byCandidato');
 
 
 

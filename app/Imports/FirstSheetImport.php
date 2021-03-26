@@ -8,6 +8,7 @@ use Maatwebsite\Excel\Concerns\Importable;
 use Maatwebsite\Excel\Concerns\WithValidation;
 use Maatwebsite\Excel\Concerns\WithMappedCells;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
+use Maatwebsite\Excel\Events\AfterExport;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -15,8 +16,12 @@ use Illuminate\Support\Facades\Validator;
 
 class FirstSheetImport implements ToCollection,  WithHeadingRow, WithValidation
 {
+    private $rows = 0;
+
     public function collection(Collection $rows)
     {
+
+            ++$this->rows;
 
             foreach ($rows as $row) {
                 
@@ -76,11 +81,11 @@ class FirstSheetImport implements ToCollection,  WithHeadingRow, WithValidation
 
     public function prepareForValidation($data, $index)
     {
-        $data['municipio'] = DB::table('municipios')->where('nombre',$data['municipio'])->first()->clave_municipio;
-        $data['localidad'] = DB::table('localidades')->where('nombre','LIKE' ,'%'.$data['localidad'].'%')->first()->id;
-        $data['lugar_nacimiento'] = DB::table('entidades_federales')->where('nombre', $data['lugar_nacimiento'])->first()->id;
-        $data['entidad'] = DB::table('entidades_federales')->where('nombre', $data['entidad'])->first()->id;
-        $data['seccion'] = DB::table('secciones')->where('seccion', $data['seccion'])->first()->id;
+        $data['municipio'] = $data['municipio'] != ''  ? DB::table('municipios')->where('nombre',$data['municipio'])->first()->clave_municipio : null;
+        $data['localidad'] = $data['localidad'] != '' ? DB::table('localidades')->where('nombre','LIKE' ,'%'.$data['localidad'].'%')->first()->id : null;
+        $data['lugar_nacimiento'] = $data['lugar_nacimiento'] != '' ? DB::table('entidades_federales')->where('nombre', $data['lugar_nacimiento'])->first()->id : null;
+        $data['entidad'] = $data['entidad'] != '' ? DB::table('entidades_federales')->where('nombre', $data['entidad'])->first()->id : null;
+        $data['seccion'] = $data['seccion'] != '' ? DB::table('secciones')->where('seccion', $data['seccion'])->first()->id : null;
 
         return $data;
     }
@@ -88,8 +93,28 @@ class FirstSheetImport implements ToCollection,  WithHeadingRow, WithValidation
     public function customValidationMessages()
     {
         return [
-            'cve_elector.unique' => 'El valor de :attribute. ya existe en la base de datos',
+            'cve_elector.unique' => 'El valor de :attribute, ya existe en la base de datos',
             'cve_elector.size' => 'El valor de :attribute. no coincide con la longitud requerida(18 digitos)',
+            'municipio.numeric' => 'El valor de :attribute, no es un número entero',
+            'localidad.numeric' => 'El valor de :attribute, no es un número entero',
+            'lugar_nacimiento.numeric' => 'El valor de :attribute, no es un número entero',
+            'entidad.numeric' => 'El valor de :attribute, no es un número entero',
+            'seccion.numeric' => 'El valor de :attribute, no es un número entero',
+        ];
+    }
+
+    public function getRowCount(): int
+    {
+        return $this->rows;
+    }
+
+    public function registerEvents(): array
+    {
+        return [
+            // Handle by a closure.
+            AfterExport::class => function(AfterExport $event) {
+                $this->getRowCount();
+            },
         ];
     }
     /*public function mapping(): array

@@ -6,6 +6,7 @@ use Maatwebsite\Excel\Concerns\FromQuery;
 use Maatwebsite\Excel\Concerns\WithTitle;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
+use App\Models\Candidato;
 
 use Illuminate\Support\Facades\DB;
 
@@ -26,7 +27,8 @@ class catalogByCandidato implements FromQuery, WithTitle, WithHeadings,ShouldAut
     public function query()
     {
 
-        $clave_municipio = 8;
+        $candidato = Candidato::findOrFail($this->candidatoId);        
+        $clave_municipio = $candidato->municipios()[1];
         $result = [];
 
         switch($this->type){

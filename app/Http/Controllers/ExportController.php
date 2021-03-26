@@ -48,6 +48,5 @@ class ExportController extends Controller
 
     public function descargarLayout(int $candidato_id){
          return Excel::download(new layoutPadron($candidato_id), 'preparado'.$candidato_id .'.xlsx');
-         return response()->download(storage_path('app/preparado29.xlsx'));
     }
 }
