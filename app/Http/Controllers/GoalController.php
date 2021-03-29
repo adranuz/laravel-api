@@ -28,7 +28,7 @@ class GoalController extends Controller
         $id = $request->id;
         $user = User::find($id);
         $counter = $request->counter;
-        $fields = ['goals.id','secciones.seccion','goals.desired_quantity','type_sympathizer.name'];
+        $fields = ['goals.id','secciones.seccion','goals.desired_quantity','type_sympathizer.name', "demarcaciones.demarcacion"];
         if($user->coordinador == "S" && $user->co_de == "N"){
             
             $coordinador = Coordinador::find($user->candidato_id);
@@ -42,6 +42,7 @@ class GoalController extends Controller
                 $metas = DB::table("secciones")
                 ->join('goals','secciones.id',"=",'goals.seccion_id')
                 ->join("type_sympathizer","type_sympathizer.id","=",'goals.type_sympathizer_id')
+                ->join("demarcaciones","goals.demarcaciones_id", "=", "demarcaciones.id")
                 ->where("goals.candidato_id", $candidatoId)
                 ->where("type_sympathizer.name", $param)
                 ->where("goals.seccion_id",$seccion[0]->id)
@@ -56,6 +57,7 @@ class GoalController extends Controller
                 $metas = DB::table("secciones")
                 ->join('goals','secciones.id',"=",'goals.seccion_id')
                 ->join("type_sympathizer","type_sympathizer.id","=",'goals.type_sympathizer_id')
+                ->join("demarcaciones","goals.demarcaciones_id", "=", "demarcaciones.id")
                 ->where("goals.candidato_id", $candidatoId)
                 ->where("type_sympathizer.name", $param)
                 ->get($fields);
@@ -69,6 +71,7 @@ class GoalController extends Controller
             $metas = DB::table("secciones")
             ->join('goals','secciones.id',"=",'goals.seccion_id')
             ->join("type_sympathizer","type_sympathizer.id","=",'goals.type_sympathizer_id')
+            ->join("demarcaciones","goals.demarcaciones_id", "=", "demarcaciones.id")
             ->where("goals.candidato_id", $candidatoId)
             ->where("goals.demarcaciones_id",$demarcacion->id)
             ->where("type_sympathizer.name", $param)                
@@ -81,6 +84,7 @@ class GoalController extends Controller
             $metas = DB::table("secciones")
             ->join('goals','secciones.id',"=",'goals.seccion_id')
             ->join("type_sympathizer","type_sympathizer.id","=",'goals.type_sympathizer_id')
+            ->join("demarcaciones","goals.demarcaciones_id", "=", "demarcaciones.id")
             ->where("goals.candidato_id", $candidatoId)
             ->where("type_sympathizer.name", $param)
             ->get($fields);
