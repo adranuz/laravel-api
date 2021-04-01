@@ -69,7 +69,9 @@ Route::group(['middleware' => ['auth:api']], function () {
     Route::get('/municipios/{entidad}', 'Busquedas\BusquedasCandidatos@getMunicip');
     Route::get('/secciones/{cve_municipio}/{colonia}', 'Busquedas\BusquedasCandidatos@getColoniasSecciones');
 
+
     Route::post('/registro/poblacion', 'Simpatizantes@registroPoblacion');
+    Route::delete('/poblacion/{id}', 'Simpatizantes@delete');
     Route::put('/poblacion/{cve}', 'Simpatizantes@updatePoblacion');
     Route::post('/registro/simpatizante', 'Simpatizantes@registroSimpatizante');
     
@@ -119,8 +121,4 @@ Route::group(['middleware' => ['auth:api']], function () {
 
     #Imports 
     Route::get('/candidato/{id}/logs', 'ImportController@byCandidato');
-
-
-
-
 });

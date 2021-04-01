@@ -166,4 +166,11 @@ class Simpatizantes extends Controller
         
         return response()->json($response);
     }
+
+    public function delete(int $id){
+        $person = PadronElectoral::findOrFail($id);        
+        $simpatizante = SimpatizantesCandidato::where('padronelectoral_id', $person->id)->first();
+        $simpatizante->delete();
+        return ["data" => 'registro eliminado correctamente'];
+    }
 }
