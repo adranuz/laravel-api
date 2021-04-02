@@ -255,7 +255,8 @@ class GoalController extends Controller
 
             }
         }else{
-            $sec = DB::table("secciones")->where("clave_municipio",$claveMunicipio)->paginate(100);
+            $secciones = DB::table("secciones")->where("clave_municipio",$claveMunicipio)->pluck('id');
+            //$sec = DB::table("secciones")->where("clave_municipio",$claveMunicipio)->paginate(100);
             $seccions = DB::table("secciones")->where("clave_municipio",$claveMunicipio)->count();
             $pages = round($seccions/10);
             $secciones = [];
@@ -271,6 +272,8 @@ class GoalController extends Controller
                 array_push($s,$this->consultaSimpatizantes($entidad, $claveMunicipio,$seccion->seccion, $candidato, "SI"));*/
             }
             return ["secciones"=>$secciones, "nd"=>$nd, "pages"=>$pages,"coordinador"=>false];
+            //return var_dump($secciones);
+            //return $this->newFunction($entidad, $claveMunicipio,$secciones, $candidato, $goal_type);
 
         }
     }
@@ -289,7 +292,18 @@ class GoalController extends Controller
         return $count;
     }
     
-    
+    public function newFunction($entidad, $clave_municipio,$secciones, $user, $simpatiza){
+        $result = DB::table('padronelectoral')
+                        ->join('simpatizantes_candidatos','simpatizantes_candidatos.padronelectoral_id','=','padronelectoral.id')
+                        ->where("entidad", $entidad)
+                        ->where("municipio", $clave_municipio)
+                        //->whereIn("simpatizantes_candidatos.seccion_id",$secciones)
+                        ->where("simpatizantes_candidatos.candidato_id", $user)                        
+                        ->where("simpatizantes_candidatos.data",'like' ,"%".$simpatiza."%")
+                        ->get();
+        return $result;
+
+    }
     public function goalCounter($candidato_id, Request $request){
         
         $param['municipio_id'] = $request->municipio_id;       
@@ -353,12 +367,14 @@ class GoalController extends Controller
 
     public function getSimpatizantesByType(Request $request, int $candidato_id){
 
+
         $simpatizantes = DB::table('simpatizantes_candidatos')
                             ->join('padronelectoral','simpatizantes_candidatos.padronelectoral_id','=','padronelectoral.id')
                             ->where('simpatizantes_candidatos.candidato_id',$candidato_id)
                             ->where('simpatizantes_candidatos.data','like','%"participacion":"'.$request->type.'"%')
                             ->orderBy('padronelectoral.seccion','asc')
-                            ->paginate(10000);
+                            ->paginate(100);
+        $simpatizantes->appends(request()->query())->links();
 
      return $simpatizantes;
     }
