@@ -121,4 +121,5 @@ Route::group(['middleware' => ['auth:api']], function () {
 
     #Imports 
     Route::get('/candidato/{id}/logs', 'ImportController@byCandidato');
+    
 });
