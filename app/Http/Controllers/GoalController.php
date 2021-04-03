@@ -13,6 +13,12 @@ use Illuminate\Support\Facades\DB;
 use App\SimpatizanteCandidato;
 class GoalController extends Controller
 {
+
+    private $recordPerPage;
+
+    function  __construct(){
+        $this->recordPerPage = 10;
+    }
     public function store(Request $request, int $id){
         $input = $request->all();
         $input['created_by'] = $id;
@@ -45,8 +51,10 @@ class GoalController extends Controller
                 ->join("demarcaciones","goals.demarcaciones_id", "=", "demarcaciones.id")
                 ->where("goals.candidato_id", $candidatoId)
                 ->where("type_sympathizer.name", $param)
-                ->where("goals.seccion_id",$seccion[0]->id)
-                ->get($fields);
+                ->where("goals.seccion_id",$seccion[0]->id)                
+                ->select($fields)
+                ->paginate($this->recordPerPage);
+                $metas->appends(request()->query())->links();
 
 
                 return $counter == "true" ? ["type" => "counter","totalGoal" => count($metas)] : ["data" => $metas, "total" => count($metas)];
@@ -60,7 +68,9 @@ class GoalController extends Controller
                 ->join("demarcaciones","goals.demarcaciones_id", "=", "demarcaciones.id")
                 ->where("goals.candidato_id", $candidatoId)
                 ->where("type_sympathizer.name", $param)
-                ->get($fields);
+                ->select($fields)
+                ->paginate($this->recordPerPage);
+                $metas->appends(request()->query())->links();
                 
                 return $counter == "true" ? ["type" => "counter","totalGoal" => count($metas)] : ["data" => $metas, "total" => count($metas)];
                 //return $metas;
@@ -75,7 +85,9 @@ class GoalController extends Controller
             ->where("goals.candidato_id", $candidatoId)
             ->where("goals.demarcaciones_id",$demarcacion->id)
             ->where("type_sympathizer.name", $param)                
-            ->get($fields);
+            ->select($fields)
+            ->paginate($this->recordPerPage);
+            $metas->appends(request()->query())->links();
             
             return $counter == "true" ? ["type" => "counter","totalGoal" => count($metas)] : ["data" => $metas, "total" => count($metas)];
            // return $metas;
@@ -87,7 +99,10 @@ class GoalController extends Controller
             ->join("demarcaciones","goals.demarcaciones_id", "=", "demarcaciones.id")
             ->where("goals.candidato_id", $candidatoId)
             ->where("type_sympathizer.name", $param)
-            ->get($fields);
+            ->orderBy('secciones.seccion','asc')
+            ->select($fields)         
+            ->paginate($this->recordPerPage);
+            $metas->appends(request()->query())->links();
             
             return $counter == "true" ? ["type" => "counter","totalGoal" => count($metas)] : ["data" => $metas, "total" => count($metas)];
             //return $metas;
@@ -161,16 +176,39 @@ class GoalController extends Controller
              return ["demarcaciones"=>$nombres_demarcaciones, "conteo_demarcacion"=>$total_demarcaciones, "pages"=>1,"coordinador"=>true];
         }else {
             
-            $demarcaciones = DB::table("demarcaciones")->where("municipio_id",$municipioId)->paginate(10);
-            $pages = round($demarcaciones->count()/10);
-            foreach($demarcaciones as $demarcacion){
+            $demarcaciones = DB::table("demarcaciones")->where("municipio_id",$municipioId)->pluck('id');
+            return $this->newFunctionDem($entidadId, $municipioId,$demarcaciones, $candidatoId, $goal_type);
+
+            //$pages = round($demarcaciones->count()/10);
+            //foreach($demarcaciones as $demarcacion){
                 
-                array_push($nombres_demarcaciones,'Demarcacion '.$demarcacion->demarcacion);
-                array_push($total_demarcaciones,$this->consultaSimpatizantesPorDemarcacion($entidadId, $municipioId,$demarcacion->id, $candidatoId, $goal_type));
-            }
-             return ["demarcaciones"=>$nombres_demarcaciones, "conteo_demarcacion"=>$total_demarcaciones, "pages"=>$pages,"coordinador"=>true];
+              //  array_push($nombres_demarcaciones,'Demarcacion '.$demarcacion->demarcacion);
+                //array_push($total_demarcaciones,$this->consultaSimpatizantesPorDemarcacion($entidadId, $municipioId,$demarcacion->id, $candidatoId, $goal_type));
+           // }
+             //return ["demarcaciones"=>$nombres_demarcaciones, "conteo_demarcacion"=>$total_demarcaciones, "pages"=>$pages,"coordinador"=>true];
         }
     }
+
+    public function newFunctionDem($entidad, $clave_municipio,$demarcaciones, $user, $simpatiza){
+
+        $result = DB::table('padronelectoral')
+                        ->join('simpatizantes_candidatos','simpatizantes_candidatos.padronelectoral_id','=','padronelectoral.id')
+                        ->join('demarcaciones','simpatizantes_candidatos.data.demarcaciones_id','=','demarcaciones.id')
+                        ->where("entidad", $entidad)
+                        ->where("municipio", $clave_municipio)
+                        ->whereIn("demarcaciones.id",$demarcaciones)
+                        ->where("simpatizantes_candidatos.candidato_id", $user)                        
+                        ->where("simpatizantes_candidatos.data",'like' ,"%".$simpatiza."%")
+                        ->select('demarcaciones.demarcacion as name', DB::raw('count(sop_demarcaciones.demarcacion) as y'))
+                        ->groupBy('demarcaciones.demarcacion')
+                        ->paginate($this->recordPerPage);
+
+        $result->appends(request()->query())->links();
+                        //->get(['simpatizantes_candidatos.seccion_id']);
+        return $result;
+
+    }
+    
 
     public function consultaSimpatizantesPorDemarcacion($entidad, $clave_municipio,$demarcacion, $user, $simpatiza)
     {
@@ -198,7 +236,8 @@ class GoalController extends Controller
         $seccs = [];
         if($user->co_de == "S"){
             $demarcaciones = Demarcaciones::find($user->demarcacion);
-            $seccs = explode(",",$demarcaciones->secciones);
+            $seccs = array_map('trim',explode(",",$demarcaciones->secciones));
+            $seccs = array_map('intval', $seccs);
             $demarcacion = true;
         }
         if($user->coordinador == "S"){
@@ -214,66 +253,32 @@ class GoalController extends Controller
             $nnc = [];
             $ns = [];
             $s = [];
-            if($demarcacion){
-                foreach ($seccs as $sec){
-                    $seccion = DB::table("secciones")->where("seccion",$sec)->paginate(100);
-                    array_push($secciones,"Seccion $sec");                    
-                    array_push($nd,$this->consultaSimpatizantes($entidad, $claveMunicipio,$seccion[0]->id, $candidato, $goal_type));
-                   /* array_push($nnc,$this->consultaSimpatizantes($entidad, $claveMunicipio,$sec, $candidato, "NO LO CONOZCO"));
-                    array_push($ns,$this->consultaSimpatizantes($entidad, $claveMunicipio,$sec, $candidato, "NO"));
-                    array_push($s,$this->consultaSimpatizantes($entidad, $claveMunicipio,$sec, $candidato, "SI"));*/
-                }
-                return ["secciones"=>$secciones, "nd"=>$nd,"pages"=>0,"coordinador"=>false];
+            //verifica si es coordinador de demarcacion
+            if($demarcacion){                
+                return $this->newFunction($entidad, $claveMunicipio,$seccs, $candidato, $goal_type);
             }else{
+                //obtiene los registros de la configuracion y los guarda en un array
                 $sec = json_decode($c->configuracion, true)['registros'];
                 $arr = explode("-",$sec);
+                //verifica si es un coordinador de tipo seccional o municipal
                 if(count($arr) == 3){
+                    # coord seccional
                     $sec = $arr[2];
-                    $seccion = DB::table("secciones")->where("seccion",$sec)->paginate(100);
+                    $seccion = DB::table("secciones")->where("seccion",$sec)->pluck('seccion');
+                    return $this->newFunction($entidad, $claveMunicipio,$seccion, $candidato, $goal_type);
 
-                    
-                    array_push($secciones,"Seccion $sec");
-                    array_push($nd,$this->consultaSimpatizantes($entidad, $claveMunicipio,$seccion[0]->id, $candidato, $goal_type));
-                   /* array_push($nnc,$this->consultaSimpatizantes($entidad, $claveMunicipio,$sec, $candidato, "NO LO CONOZCO"));
-                    array_push($ns,$this->consultaSimpatizantes($entidad, $claveMunicipio,$sec, $candidato, "NO"));
-                    array_push($s,$this->consultaSimpatizantes($entidad, $claveMunicipio,$sec, $candidato, "SI"));*/
-                    return ["secciones"=>$secciones, "nd"=>$nd, "pages"=>0,"coordinador"=>true];
                 }elseif (count($arr) == 2) {
+                    # coord municipal
                     $muni = $arr[1];
-                    $sec = DB::table("secciones")->where("clave_municipio",$muni)->paginate(100);
-                    $seccions = DB::table("secciones")->where("clave_municipio",$muni)->count();
-                    $pages = round($seccions/10);
-                    foreach ($sec as $seccion){
-                        array_push($secciones,"Seccion $seccion->seccion");
-                        array_push($nd,$this->consultaSimpatizantes($entidad, $claveMunicipio,$seccion->id, $candidato,$goal_type));
-                        /*array_push($nnc,$this->consultaSimpatizantes($entidad, $claveMunicipio,$seccion->seccion, $candidato, "NO LO CONOZCO"));
-                        array_push($ns,$this->consultaSimpatizantes($entidad, $claveMunicipio,$seccion->seccion, $candidato, "NO"));
-                        array_push($s,$this->consultaSimpatizantes($entidad, $claveMunicipio,$seccion->seccion, $candidato, "SI"));*/
-                    }
-                    return ["secciones"=>$secciones, "nd"=>$nd, "pages"=>$pages,"coordinador"=>false];
+                    $sec = DB::table("secciones")->where("clave_municipio",$muni)->pluck('seccion');
+                    return $this->newFunction($entidad, $claveMunicipio,$sec, $candidato, $goal_type);
                 }
 
             }
         }else{
-            $secciones = DB::table("secciones")->where("clave_municipio",$claveMunicipio)->pluck('id');
-            //$sec = DB::table("secciones")->where("clave_municipio",$claveMunicipio)->paginate(100);
-            $seccions = DB::table("secciones")->where("clave_municipio",$claveMunicipio)->count();
-            $pages = round($seccions/10);
-            $secciones = [];
-            $nd = [];
-            $nnc = [];
-            $ns = [];
-            $s = [];
-            foreach ($sec as $seccion){
-                array_push($secciones,"Seccion $seccion->seccion");
-                array_push($nd,$this->consultaSimpatizantes($entidad, $claveMunicipio,$seccion->id, $candidato, $goal_type));
-                /*array_push($nnc,$this->consultaSimpatizantes($entidad, $claveMunicipio,$seccion->seccion, $candidato, "NO LO CONOZCO"));
-                array_push($ns,$this->consultaSimpatizantes($entidad, $claveMunicipio,$seccion->seccion, $candidato, "NO"));
-                array_push($s,$this->consultaSimpatizantes($entidad, $claveMunicipio,$seccion->seccion, $candidato, "SI"));*/
-            }
-            return ["secciones"=>$secciones, "nd"=>$nd, "pages"=>$pages,"coordinador"=>false];
-            //return var_dump($secciones);
-            //return $this->newFunction($entidad, $claveMunicipio,$secciones, $candidato, $goal_type);
+            $secciones = DB::table("secciones")->where("clave_municipio",$claveMunicipio)->pluck('seccion');
+
+            return $this->newFunction($entidad, $claveMunicipio,$secciones, $candidato, $goal_type);
 
         }
     }
@@ -293,14 +298,25 @@ class GoalController extends Controller
     }
     
     public function newFunction($entidad, $clave_municipio,$secciones, $user, $simpatiza){
+
         $result = DB::table('padronelectoral')
                         ->join('simpatizantes_candidatos','simpatizantes_candidatos.padronelectoral_id','=','padronelectoral.id')
+                        ->join('secciones','simpatizantes_candidatos.seccion_id','=','secciones.id')
+                        ->join('goals','goals.seccion_id','=','secciones.id')
+                        ->join('type_sympathizer','type_sympathizer.id','=','goals.type_sympathizer_id')
                         ->where("entidad", $entidad)
                         ->where("municipio", $clave_municipio)
-                        //->whereIn("simpatizantes_candidatos.seccion_id",$secciones)
+                        ->whereIn("secciones.seccion",$secciones)
                         ->where("simpatizantes_candidatos.candidato_id", $user)                        
                         ->where("simpatizantes_candidatos.data",'like' ,"%".$simpatiza."%")
-                        ->get();
+                        ->where("type_sympathizer.name",$simpatiza)                      
+                        ->select(DB::raw('concat("Seccion ",sop_secciones.seccion) as name'),/*'secciones.seccion as name',*/ DB::raw('count(sop_secciones.seccion) as y'))
+                        ->orderBy('secciones.seccion','asc')
+                        ->groupBy('secciones.seccion')
+                        ->paginate(500);
+
+        $result->appends(request()->query())->links();
+                        //->get(['simpatizantes_candidatos.seccion_id']);
         return $result;
 
     }
