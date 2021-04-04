@@ -13,13 +13,13 @@ class CreateCoordinadorTable extends Migration
      */
     public function up()
     {
-        Schema::create('coordinador', function (Blueprint $table) {
+        /*Schema::create('coordinador', function (Blueprint $table) {
             $table->increments('id');
             $table->string('nombre');
             $table->string('configuracion');
             $table->unsignedBigInteger('candidato_id')->foreign('candidato_id')->references('id')->on('candidato');            
             $table->timestamps();
-        });
+        });*/
     }
 
     /**

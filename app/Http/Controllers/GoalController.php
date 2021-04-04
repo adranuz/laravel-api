@@ -149,7 +149,9 @@ class GoalController extends Controller
         ->where("goals.candidato_id", $candidatoId)
         ->where("type_sympathizer.name", $param)
         ->orderBy('goals.demarcaciones_id','asc')
-        ->get($fields);
+        ->select($fields)         
+        ->paginate($this->recordPerPage);
+        $metas->appends(request()->query())->links();
 
         //return $metas;
         return $counter == "true" ? ["type" => "counter","totalGoal" => count($metas)] : ["data" => $metas, "total" => count($metas)];
@@ -166,10 +168,7 @@ class GoalController extends Controller
 
         if($user->co_de == "S" ){
             $demarcacion = Demarcaciones::find($user->demarcacion);
-            //$demarcacion = true;
-            //$demarcaciones = DB::table("demarcaciones")->where("municipio_id",$municipioId)->paginate(10);
-            
-                        
+                 
                 array_push($nombres_demarcaciones,'Demarcacion '.$demarcacion->demarcacion);
                 array_push($total_demarcaciones,$this->consultaSimpatizantesPorDemarcacion($entidadId, $municipioId,$demarcacion->id, $candidatoId, $goal_type));
             
@@ -178,14 +177,6 @@ class GoalController extends Controller
             
             $demarcaciones = DB::table("demarcaciones")->where("municipio_id",$municipioId)->pluck('id');
             return $this->newFunctionDem($entidadId, $municipioId,$demarcaciones, $candidatoId, $goal_type);
-
-            //$pages = round($demarcaciones->count()/10);
-            //foreach($demarcaciones as $demarcacion){
-                
-              //  array_push($nombres_demarcaciones,'Demarcacion '.$demarcacion->demarcacion);
-                //array_push($total_demarcaciones,$this->consultaSimpatizantesPorDemarcacion($entidadId, $municipioId,$demarcacion->id, $candidatoId, $goal_type));
-           // }
-             //return ["demarcaciones"=>$nombres_demarcaciones, "conteo_demarcacion"=>$total_demarcaciones, "pages"=>$pages,"coordinador"=>true];
         }
     }
 
@@ -193,15 +184,18 @@ class GoalController extends Controller
 
         $result = DB::table('padronelectoral')
                         ->join('simpatizantes_candidatos','simpatizantes_candidatos.padronelectoral_id','=','padronelectoral.id')
-                        ->join('demarcaciones','simpatizantes_candidatos.data.demarcaciones_id','=','demarcaciones.id')
+                        ->join('demarcaciones','simpatizantes_candidatos.demarcacion_id','=','demarcaciones.id')
+                        ->join('goals','goals.demarcaciones_id','=','demarcaciones.id')
+                        ->join('type_sympathizer','type_sympathizer.id','=','goals.type_sympathizer_id')
                         ->where("entidad", $entidad)
                         ->where("municipio", $clave_municipio)
                         ->whereIn("demarcaciones.id",$demarcaciones)
                         ->where("simpatizantes_candidatos.candidato_id", $user)                        
                         ->where("simpatizantes_candidatos.data",'like' ,"%".$simpatiza."%")
-                        ->select('demarcaciones.demarcacion as name', DB::raw('count(sop_demarcaciones.demarcacion) as y'))
+                        ->where("type_sympathizer.name",$simpatiza)
+                        ->select(DB::raw('concat("Demarcacion ",sop_demarcaciones.demarcacion) as name'), DB::raw('count(sop_demarcaciones.demarcacion) as y'))
                         ->groupBy('demarcaciones.demarcacion')
-                        ->paginate($this->recordPerPage);
+                        ->paginate(1000);
 
         $result->appends(request()->query())->links();
                         //->get(['simpatizantes_candidatos.seccion_id']);
@@ -386,8 +380,10 @@ class GoalController extends Controller
 
         $simpatizantes = DB::table('simpatizantes_candidatos')
                             ->join('padronelectoral','simpatizantes_candidatos.padronelectoral_id','=','padronelectoral.id')
+                            ->leftjoin('demarcaciones','simpatizantes_candidatos.demarcacion_id', '=', 'demarcaciones.id')
                             ->where('simpatizantes_candidatos.candidato_id',$candidato_id)
                             ->where('simpatizantes_candidatos.data','like','%"participacion":"'.$request->type.'"%')
+                            ->orderBy('demarcaciones.demarcacion','asc')
                             ->orderBy('padronelectoral.seccion','asc')
                             ->paginate(100);
         $simpatizantes->appends(request()->query())->links();
