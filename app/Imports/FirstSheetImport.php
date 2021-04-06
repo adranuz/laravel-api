@@ -25,7 +25,8 @@ class FirstSheetImport implements ToCollection,  WithHeadingRow, WithValidation
 
             foreach ($rows as $row) {
                 
-                PadronElectoral::create([ 
+                PadronElectoral::updateOrCreate(['cve_elector' => $row['cve_elector']],
+                    [ 
                     'cve_elector' => $row['cve_elector'] , 
                     'paterno' => $row['paterno'], 
                     'materno' => $row['materno'], 
@@ -46,7 +47,7 @@ class FirstSheetImport implements ToCollection,  WithHeadingRow, WithValidation
                     'municipio' => $row['municipio'], 
                     'localidad' => $row['localidad'], 
                     'fecha_inscripcion_padron' => $row['fecha_inscripcion_padron']
-                ]);            
+                ]);         
             }
         
     }
@@ -55,9 +56,9 @@ class FirstSheetImport implements ToCollection,  WithHeadingRow, WithValidation
     {
 
         return [
-            '*.cve_elector' => 'size:18|unique:padronelectoral,cve_elector' , 
-            '*.paterno' => 'alpha', 
-            '*.materno' => 'alpha', 
+            '*.cve_elector' => 'size:18' , 
+            '*.paterno' => 'regex:/^[a-zA-Z\s]*$/', 
+            '*.materno' => 'regex:/^[a-zA-Z\s]*$/', 
             '*.nombre' => 'regex:/^[a-zA-Z\s]*$/', 
             '*.nacimiento' => 'numeric', 
             '*.lugar_nacimiento' => 'numeric', 
