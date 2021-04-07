@@ -56,9 +56,13 @@ Route::get('/candidato/{id}/{entidad}/{municipio_id}/secciones', 'Busquedas\Busq
 /** TEST ROUTES FOR GOAL */
 Route::get('/tipos-simpatizantes', 'TypeSympathizerController@index');
 
-    #Exportación
+
+#Exportación
+Route::get('/candidato/{id}/simpatizantes/{type}/exportar', 'ExportController@exportarTodasEncuestas');
 Route::get('/candidato/{id}/encuesta/exportar', 'ExportController@exportarEncuestaBy');
 Route::get('/candidato/{id}/descargar/layout', 'ExportController@descargarLayout');
+
+
     #Importacion de datos
 Route::post('/candidato/{id}/padron/importar', 'ImportController@importPadron');
 
@@ -121,4 +125,5 @@ Route::group(['middleware' => ['auth:api']], function () {
 
     #Imports 
     Route::get('/candidato/{id}/logs', 'ImportController@byCandidato');
+    
 });

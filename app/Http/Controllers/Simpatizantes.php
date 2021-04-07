@@ -40,6 +40,7 @@ class Simpatizantes extends Controller
             $data["municipio"] = $getDatos->clave_municipio;
             $data["localidad"] = $localidad->localidad;
             $data["nacimiento"] = $request->year . $request->month . $request->day;
+            $dataCandidato["demarcacion_id"] = $request->demarcacion_id;
             $data["created_by"] = $request->user()->id;
 
             $claveElector = $request->cve_elector;
@@ -100,6 +101,7 @@ class Simpatizantes extends Controller
         $dataCandidato = $request->only('simpatiza', 'data','assign_type','assign_id');
         $dataCandidato["created_by"] = $request->user()->id;
         $dataCandidato["seccion_id"] = $request->seccion;
+        $dataCandidato["demarcacion_id"] = $request->demarcacion_id;
         SimpatizantesCandidato::updateOrCreate(
             [
                 'candidato_id' => $request->candidato_id,

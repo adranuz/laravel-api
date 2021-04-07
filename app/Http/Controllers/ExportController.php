@@ -46,6 +46,58 @@ class ExportController extends Controller
                                 
     }
 
+    public function exportarTodasEncuestas(int $candidato_id, string $type){
+
+        switch($type){
+         case 'No deciden':
+            $type = 'NO DECIDE';
+         break;
+         case 'No nos conocen':
+            $type = 'NO LO CONOZCO';
+         break;
+         case 'No Simpatizan':
+            $type = 'NO';
+         break;
+         case 'Simpatizantes':
+            $type = 'SI';
+         break;
+        }
+
+        
+        $headers = [];
+        $simpatizantes = DB::table('simpatizantes_candidatos')
+                            ->join('padronelectoral','simpatizantes_candidatos.padronelectoral_id','=','padronelectoral.id')
+                            ->join('municipios','municipios.id','=','padronelectoral.municipio')
+                            ->leftjoin('demarcaciones','demarcaciones.id','=','simpatizantes_candidatos.data->demarcacion_id')
+                            ->where('simpatizantes_candidatos.candidato_id','LIKE','%'.$candidato_id.'%')
+                            ->where('simpatizantes_candidatos.simpatiza',$type)
+                            ->select(   'padronelectoral.cve_elector',
+                                        'padronelectoral.nombre',
+                                        'padronelectoral.paterno',
+                                        'padronelectoral.materno',                                        
+                                        'padronelectoral.colonia',
+                                        'padronelectoral.calle',
+                                        'padronelectoral.seccion',
+                                        'municipios.nombre as nombre_municipio',
+                                        'simpatizantes_candidatos.data->demarcacion_id as demarcacion',
+                                        'simpatizantes_candidatos.data->participacion as participacion',
+                                        'simpatizantes_candidatos.data->redsocial as redsocial',
+                                        'simpatizantes_candidatos.data->telefonos as telefonos',                                        
+                                        'municipios.nombre as nombre_municipio',
+                                        'demarcaciones.demarcacion',
+                                        'simpatizantes_candidatos.created_at as fecha_captura'
+                                        )
+                            
+                            ->orderBy('padronelectoral.seccion','asc')
+                            ->get();
+        
+        if(!$simpatizantes->isEmpty()){
+            $headers = array_keys(json_decode(json_encode($simpatizantes[0]) ,true));
+        }
+    
+        return Excel::download(new SimpatizanteCandidatoExport(["data" => $simpatizantes, "headers" => $headers]), 'registro_'.$type.'.xlsx');
+    }
+
     public function descargarLayout(int $candidato_id){
          return Excel::download(new layoutPadron($candidato_id), 'preparado'.$candidato_id .'.xlsx');
     }
