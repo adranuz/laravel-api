@@ -53,8 +53,8 @@ class UsersController extends Controller
         $request->request->add([
             'scope' => $scope,
             'grant_type' => 'password',
-            'client_id' => '18',
-            'client_secret' => 'O1wPbwR71r9CJN0FsBlr8qI3e4t4JEgk9lpbmOwI',
+            'client_id' => '20',
+            'client_secret' => 'nt26Q9iA1zTk1za3n5Ph73wXmTkr2VTFfo3ZYBMU',
             'username' => Input::get($type),
             'type_username' => $type
         ]);

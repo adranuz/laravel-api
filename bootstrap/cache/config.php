@@ -8,7 +8,7 @@
     'timezone' => 'America/Chihuahua',
     'locale' => 'en',
     'fallback_locale' => 'en',
-    'key' => 'base64:KgmJzIWxRdHyjOisN/gUQcfqDROkBjYAYSBj+MkToxE=',
+    'key' => '',
     'cipher' => 'AES-256-CBC',
     'log' => 'single',
     'log_level' => 'debug',
@@ -173,7 +173,7 @@
       'file' => 
       array (
         'driver' => 'file',
-        'path' => '/home/isai/Documentos/padron/SOP-master/api/storage/framework/cache/data',
+        'path' => 'C:\\laragon\\www\\src\\storage\\framework/cache/data',
       ),
       'memcached' => 
       array (
@@ -240,7 +240,7 @@
       'sqlite' => 
       array (
         'driver' => 'sqlite',
-        'database' => 'u389004884_sopolitica',
+        'database' => 'homestead',
         'prefix' => '',
       ),
       'mysql' => 
@@ -248,9 +248,9 @@
         'driver' => 'mysql',
         'host' => '127.0.0.1',
         'port' => '3306',
-        'database' => 'u389004884_sopolitica',
+        'database' => 'homestead',
         'username' => 'root',
-        'password' => '.Santana7391',
+        'password' => 'password',
         'unix_socket' => '',
         'charset' => 'utf8mb4',
         'collation' => 'utf8mb4_unicode_ci',
@@ -263,9 +263,9 @@
         'driver' => 'pgsql',
         'host' => '127.0.0.1',
         'port' => '3306',
-        'database' => 'u389004884_sopolitica',
+        'database' => 'homestead',
         'username' => 'root',
-        'password' => '.Santana7391',
+        'password' => 'password',
         'charset' => 'utf8',
         'prefix' => '',
         'schema' => 'public',
@@ -276,9 +276,9 @@
         'driver' => 'sqlsrv',
         'host' => '127.0.0.1',
         'port' => '3306',
-        'database' => 'u389004884_sopolitica',
+        'database' => 'homestead',
         'username' => 'root',
-        'password' => '.Santana7391',
+        'password' => 'password',
         'charset' => 'utf8',
         'prefix' => '',
       ),
@@ -329,7 +329,7 @@
     'imports' => 
     array (
       'read_only' => true,
-      'ignore_empty' => false,
+      'ignore_empty' => true,
       'heading_row' => 
       array (
         'formatter' => 'slug',
@@ -396,7 +396,7 @@
     ),
     'temporary_files' => 
     array (
-      'local_path' => '/home/isai/Documentos/padron/SOP-master/api/storage/framework/laravel-excel',
+      'local_path' => 'C:\\laragon\\www\\src\\storage\\framework/laravel-excel',
       'remote_disk' => NULL,
       'remote_prefix' => NULL,
       'force_resync_remote' => NULL,
@@ -411,12 +411,12 @@
       'local' => 
       array (
         'driver' => 'local',
-        'root' => '/home/isai/Documentos/padron/SOP-master/api/storage/app',
+        'root' => 'C:\\laragon\\www\\src\\storage\\app',
       ),
       'public' => 
       array (
         'driver' => 'local',
-        'root' => '/home/isai/Documentos/padron/SOP-master/api/storage/app/public',
+        'root' => 'C:\\laragon\\www\\src\\storage\\app/public',
         'url' => 'http://localhost/storage',
         'visibility' => 'public',
       ),
@@ -449,7 +449,7 @@
       'theme' => 'default',
       'paths' => 
       array (
-        0 => '/home/isai/Documentos/padron/SOP-master/api/resources/views/vendor/mail',
+        0 => 'C:\\laragon\\www\\src\\resources\\views/vendor/mail',
       ),
     ),
   ),
@@ -529,7 +529,7 @@
     'lifetime' => 120,
     'expire_on_close' => false,
     'encrypt' => false,
-    'files' => '/home/isai/Documentos/padron/SOP-master/api/storage/framework/sessions',
+    'files' => 'C:\\laragon\\www\\src\\storage\\framework/sessions',
     'connection' => NULL,
     'table' => 'sessions',
     'store' => NULL,
@@ -1248,9 +1248,9 @@
   array (
     'paths' => 
     array (
-      0 => '/home/isai/Documentos/padron/SOP-master/api/resources/views',
+      0 => 'C:\\laragon\\www\\src\\resources\\views',
     ),
-    'compiled' => '/home/isai/Documentos/padron/SOP-master/api/storage/framework/views',
+    'compiled' => false,
   ),
   'passport' => 
   array (
